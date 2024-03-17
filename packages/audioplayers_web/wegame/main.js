@@ -2,6 +2,7 @@ class MPFlutter_Wechat_AudioElement {
   constructor(src) {
     this.src = src;
     this.loop = false;
+    this.paused = false;
   }
 
   setLoop(value) {
@@ -18,9 +19,11 @@ class MPFlutter_Wechat_AudioElement {
     if (this.audioContext && this.source) {
       const audioBuffer = await new Promise((resolve, reject) => {
         this.audioContext.decodeAudioData(
-          buffer, (result) => {
-            resolve(result)
-          }, (err) => {
+          buffer,
+          (result) => {
+            resolve(result);
+          },
+          (err) => {
             reject(err);
           }
         );
@@ -49,18 +52,22 @@ class MPFlutter_Wechat_AudioElement {
     return 0;
   }
 
-  play() {
-    if (this.source && this.audioContext) {
+  async play() {
+    if (this.paused && this.audioContext) {
+      this.audioContext.resume()
+    }
+    else if (this.source && this.audioContext) {
       this.source.connect(this.audioContext.destination);
       this.source.start(0, this._currentTime ?? 0);
     }
+    this.paused = false;
   }
 
   pause() {
-    if (this.source) {
-      this.source.disconnect();
-      this.source.stop();
+    if (this.audioContext) {
+      this.audioContext.suspend()
     }
+    this.paused = true;
   }
 }
 
