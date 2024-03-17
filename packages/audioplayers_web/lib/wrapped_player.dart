@@ -4,9 +4,10 @@ import 'dart:html';
 import 'package:audioplayers_platform_interface/audioplayers_platform_interface.dart';
 import 'package:audioplayers_web/num_extension.dart';
 import 'package:audioplayers_web/web_audio_js.dart';
+import 'package:audioplayers_web/web_player.dart';
 import 'package:flutter/services.dart';
 
-class WrappedPlayer {
+class WrappedPlayer extends WebPlayer {
   final String playerId;
   final eventStreamController = StreamController<AudioEvent>.broadcast();
 
@@ -28,6 +29,17 @@ class WrappedPlayer {
 
   WrappedPlayer(this.playerId);
 
+  @override
+  num? getPlayerCurrentTime() {
+    return player?.currentTime;
+  }
+
+  @override
+  num? getPlayerDuration() {
+    return player?.duration;
+  }
+
+  @override
   Future<void> setUrl(String url) async {
     if (_currentUrl == url) {
       eventStreamController.add(
@@ -47,20 +59,24 @@ class WrappedPlayer {
     }
   }
 
+  @override
   set volume(double volume) {
     _currentVolume = volume;
     player?.volume = volume;
   }
 
+  @override
   set balance(double balance) {
     _stereoPanner?.pan.value = balance;
   }
 
+  @override
   set playbackRate(double rate) {
     _currentPlaybackRate = rate;
     player?.playbackRate = rate;
   }
 
+  @override
   void recreateNode() {
     if (_currentUrl == null) {
       return;
@@ -171,13 +187,16 @@ class WrappedPlayer {
     );
   }
 
+  @override
   bool shouldLoop() => _currentReleaseMode == ReleaseMode.loop;
 
+  @override
   set releaseMode(ReleaseMode releaseMode) {
     _currentReleaseMode = releaseMode;
     player?.loop = shouldLoop();
   }
 
+  @override
   void release() {
     stop();
     // Release `AudioElement` correctly (#966)
@@ -200,6 +219,7 @@ class WrappedPlayer {
     _playerErrorSubscription = null;
   }
 
+  @override
   Future<void> start(double position) async {
     _isPlaying = true;
     if (_currentUrl == null) {
@@ -212,22 +232,26 @@ class WrappedPlayer {
     await player?.play();
   }
 
+  @override
   Future<void> resume() async {
     await start(_pausedAt ?? 0);
   }
 
+  @override
   void pause() {
     _pausedAt = player?.currentTime as double?;
     _isPlaying = false;
     player?.pause();
   }
 
+  @override
   void stop() {
     pause();
     _pausedAt = 0;
     player?.currentTime = 0;
   }
 
+  @override
   void seek(int position) {
     final seekPosition = position / 1000.0;
     player?.currentTime = seekPosition;
@@ -237,12 +261,14 @@ class WrappedPlayer {
     }
   }
 
+  @override
   void log(String message) {
     eventStreamController.add(
       AudioEvent(eventType: AudioEventType.log, logMessage: message),
     );
   }
 
+  @override
   Future<void> dispose() async {
     release();
     eventStreamController.close();

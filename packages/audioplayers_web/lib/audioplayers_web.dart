@@ -3,9 +3,14 @@ import 'dart:async';
 import 'package:audioplayers_platform_interface/audioplayers_platform_interface.dart';
 import 'package:audioplayers_web/global_audioplayers_web.dart';
 import 'package:audioplayers_web/num_extension.dart';
+import 'package:audioplayers_web/web_player.dart';
+import 'package:audioplayers_web/wegame/wegame_player.dart';
 import 'package:audioplayers_web/wrapped_player.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+// ignore: do_not_use_environment
+const bool kIsMPFlutter = bool.fromEnvironment('mpflutter.library.core');
 
 class AudioplayersPlugin {
   /// The entrypoint called by the generated plugin registrant.
@@ -18,14 +23,15 @@ class AudioplayersPlugin {
 
 class WebAudioplayersPlatform extends AudioplayersPlatformInterface {
   // players by playerId
-  Map<String, WrappedPlayer> players = {};
+  Map<String, WebPlayer> players = {};
 
   @override
   Future<void> create(String playerId) async {
-    players[playerId] = WrappedPlayer(playerId);
+    players[playerId] =
+        kIsMPFlutter ? WegamePlayer(playerId) : WrappedPlayer(playerId);
   }
 
-  WrappedPlayer getPlayer(String playerId) {
+  WebPlayer getPlayer(String playerId) {
     return players[playerId] != null
         ? players[playerId]!
         : throw PlatformException(
@@ -37,7 +43,7 @@ class WebAudioplayersPlatform extends AudioplayersPlatformInterface {
 
   @override
   Future<int?> getCurrentPosition(String playerId) async {
-    final position = getPlayer(playerId).player?.currentTime;
+    final position = getPlayer(playerId).getPlayerCurrentTime();
     if (position == null) {
       return null;
     }
@@ -46,7 +52,7 @@ class WebAudioplayersPlatform extends AudioplayersPlatformInterface {
 
   @override
   Future<int?> getDuration(String playerId) async {
-    final jsDuration = getPlayer(playerId).player?.duration;
+    final jsDuration = getPlayer(playerId).getPlayerDuration();
     if (jsDuration == null) {
       return null;
     }
@@ -110,11 +116,16 @@ class WebAudioplayersPlatform extends AudioplayersPlatformInterface {
     String url, {
     bool? isLocal,
   }) async {
+    print("setSourceUrl");
+    print(url);
     await getPlayer(playerId).setUrl(url);
+    print("setSourceUrl done");
   }
 
   @override
   Future<void> setSourceBytes(String playerId, Uint8List bytes) {
+    print("setSourceBytes");
+    print(playerId);
     // TODO(luan): implement setSourceBytes for web
     throw UnimplementedError();
   }

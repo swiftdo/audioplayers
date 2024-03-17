@@ -18,6 +18,8 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   js: ^0.6.4
+  mpflutter_core: ^2.4.0
+  mpflutter_wechat_api: ^2.2.1
 
 dev_dependencies:
   dartdoc: ^6.1.5
