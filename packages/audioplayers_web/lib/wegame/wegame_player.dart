@@ -21,12 +21,24 @@ class WegameAudioElement {
     _backend.callMethod('setLoop', [value]);
   }
 
+  set playbackRate(double value) {
+    _backend.callMethod('setPlaybackRate', [value]);
+  }
+
+  set balance(double value) {
+    _backend.callMethod('setBalance', [value]);
+  }
+
   void load() {
     _backend.callMethod('load', []);
   }
 
   set onLoadedData(Function value) {
     _backend['onLoadedData'] = value;
+  }
+
+  set onPlayEnded(Function value) {
+    _backend['onPlayEnded'] = value;
   }
 
   set currentTime(num value) {
@@ -72,12 +84,10 @@ class WegamePlayer extends WebPlayer {
   ReleaseMode _currentReleaseMode = ReleaseMode.release;
   String? _currentUrl;
   bool _isPlaying = false;
+  dynamic sourceNode;
 
   WegameAudioElement? player;
-  // StereoPannerNode? _stereoPanner;
   // StreamSubscription? _playerTimeUpdateSubscription;
-  // StreamSubscription? _playerEndedSubscription;
-  // StreamSubscription? _playerLoadedDataSubscription;
   // StreamSubscription? _playerPlaySubscription;
   // StreamSubscription? _playerSeekedSubscription;
   // StreamSubscription? _playerErrorSubscription;
@@ -122,13 +132,13 @@ class WegamePlayer extends WebPlayer {
 
   @override
   set balance(double balance) {
-    // _stereoPanner?.pan.value = balance; // todo
+    player?.balance = balance;
   }
 
   @override
   set playbackRate(double rate) {
     _currentPlaybackRate = rate;
-    // player?.playbackRate = rate; // todo
+    player?.playbackRate = rate;
   }
 
   @override
@@ -138,22 +148,16 @@ class WegamePlayer extends WebPlayer {
     }
 
     final p = player = WegameAudioElement(_currentUrl);
-    // As the AudioElement is created dynamically via script,
-    // features like 'stereo panning' need the CORS header to be enabled.
-    // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    // p.crossOrigin = 'anonymous';
-    // p.loop = shouldLoop();
+    p.loop = shouldLoop();
     // p.volume = _currentVolume;
-    // p.playbackRate = _currentPlaybackRate; // todo
+    p.playbackRate = _currentPlaybackRate;
 
     _setupStreams(p);
 
     // setup stereo panning
     final audioContext = WegameAudioContext();
     final source = audioContext.createMediaElementSource(player!);
-    // _stereoPanner = audioContext.createStereoPanner(); //todo
-    // source.connect(_stereoPanner!);
-    // _stereoPanner?.connect(audioContext.destination);
+    sourceNode = source;
 
     // Preload the source
     p.load();
@@ -174,23 +178,17 @@ class WegamePlayer extends WebPlayer {
         ),
       );
     };
-    // _playerLoadedDataSubscription = p.onLoadedData.listen(
-    //   (_) {
-    //     eventStreamController.add(
-    //       const AudioEvent(
-    //         eventType: AudioEventType.prepared,
-    //         isPrepared: true,
-    //       ),
-    //     );
-    //     eventStreamController.add(
-    //       AudioEvent(
-    //         eventType: AudioEventType.duration,
-    //         duration: p.duration.fromSecondsToDuration(),
-    //       ),
-    //     );
-    //   },
-    //   onError: eventStreamController.addError,
-    // );
+    p.onPlayEnded = () {
+      if (_currentReleaseMode == ReleaseMode.release) {
+        release();
+      } else {
+        stop();
+      }
+      eventStreamController.add(
+        const AudioEvent(eventType: AudioEventType.complete),
+      );
+    };
+
     // _playerPlaySubscription = p.onPlay.listen(
     //   (_) {
     //     eventStreamController.add(
