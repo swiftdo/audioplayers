@@ -116,10 +116,7 @@ class WebAudioplayersPlatform extends AudioplayersPlatformInterface {
     String url, {
     bool? isLocal,
   }) async {
-    print("setSourceUrl");
-    print(url);
     await getPlayer(playerId).setUrl(url);
-    print("setSourceUrl done");
   }
 
   @override
