@@ -32,7 +32,7 @@ class MPFlutter_Wechat_AudioElement {
   setVolume(value) {
     this.volume = value;
     if (this.gainNode) {
-        this.gainNode.value = value;
+        this.gainNode.gain.value = value;
     }
   }
 
@@ -64,7 +64,7 @@ class MPFlutter_Wechat_AudioElement {
       this.gainNode.connect(this.audioContext.destination);
 
       if (this.volume !== undefined) {
-        this.gainNode.value = this.volume;
+        this.gainNode.gain.value = this.volume;
       }
       this.source.loop = this.loop;
       this.source.playbackRate.value = this.playbackRate;
