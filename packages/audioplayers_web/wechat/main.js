@@ -55,17 +55,18 @@ class MPFlutter_Wechat_AudioElement {
       this.source.buffer = audioBuffer;
       this.stereoPanner = this.audioContext.createStereoPanner();
       this.source.connect(this.stereoPanner);
-      this.stereoPanner.connect(this.audioContext.destination);
+      
       if (this.balance !== undefined) {
         this.stereoPanner.pan.value = this.balance;
       }
       this.gainNode = this.audioContext.createGain();
-      this.source.connect(this.gainNode);
+      this.stereoPanner.connect(this.gainNode);
       this.gainNode.connect(this.audioContext.destination);
-
       if (this.volume !== undefined) {
         this.gainNode.gain.value = this.volume;
       }
+
+
       this.source.loop = this.loop;
       this.source.playbackRate.value = this.playbackRate;
       this.source.onended = () => {
