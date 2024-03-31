@@ -90,16 +90,15 @@ class WrappedPlayer extends WebPlayer {
     p.loop = shouldLoop();
     p.volume = _currentVolume;
     p.playbackRate = _currentPlaybackRate;
+
     _setupStreams(p);
 
     // setup stereo panning
     final audioContext = JsAudioContext();
-    print("audioContext init success");
-
-    // final source = audioContext.createMediaElementSource(player!);
-    // _stereoPanner = audioContext.createStereoPanner();
-    // source.connect(_stereoPanner!);
-    // _stereoPanner?.connect(audioContext.destination);
+    final source = audioContext.createMediaElementSource(player!);
+    _stereoPanner = audioContext.createStereoPanner();
+    source.connect(_stereoPanner!);
+    _stereoPanner?.connect(audioContext.destination);
 
     // Preload the source
     p.load();
@@ -107,7 +106,7 @@ class WrappedPlayer extends WebPlayer {
 
   void _setupStreams(AudioElement p) {
     _playerLoadedDataSubscription = p.onLoadedData.listen(
-      (_) {
+          (_) {
         eventStreamController.add(
           const AudioEvent(
             eventType: AudioEventType.prepared,
@@ -124,7 +123,7 @@ class WrappedPlayer extends WebPlayer {
       onError: eventStreamController.addError,
     );
     _playerPlaySubscription = p.onPlay.listen(
-      (_) {
+          (_) {
         eventStreamController.add(
           AudioEvent(
             eventType: AudioEventType.duration,
@@ -135,7 +134,7 @@ class WrappedPlayer extends WebPlayer {
       onError: eventStreamController.addError,
     );
     _playerTimeUpdateSubscription = p.onTimeUpdate.listen(
-      (_) {
+          (_) {
         eventStreamController.add(
           AudioEvent(
             eventType: AudioEventType.position,
@@ -146,7 +145,7 @@ class WrappedPlayer extends WebPlayer {
       onError: eventStreamController.addError,
     );
     _playerSeekedSubscription = p.onSeeked.listen(
-      (_) {
+          (_) {
         eventStreamController.add(
           const AudioEvent(eventType: AudioEventType.seekComplete),
         );
@@ -154,7 +153,7 @@ class WrappedPlayer extends WebPlayer {
       onError: eventStreamController.addError,
     );
     _playerEndedSubscription = p.onEnded.listen(
-      (_) {
+          (_) {
         if (_currentReleaseMode == ReleaseMode.release) {
           release();
         } else {
@@ -167,7 +166,7 @@ class WrappedPlayer extends WebPlayer {
       onError: eventStreamController.addError,
     );
     _playerErrorSubscription = p.onError.listen(
-      (_) {
+          (_) {
         String platformMsg;
         if (p.error is MediaError) {
           platformMsg = 'Failed to set source. For troubleshooting, see '
