@@ -164,7 +164,7 @@ class WegamePlayer extends WebPlayer {
 
     // setup stereo panning
     final audioContext = WegameAudioContext();
-    //final source = audioContext.createMediaElementSource(player!);
+    final source = audioContext.createMediaElementSource(player!);
     //sourceNode = source;
 
     // Preload the source
