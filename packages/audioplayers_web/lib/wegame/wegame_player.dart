@@ -60,6 +60,10 @@ class WegameAudioElement {
   void pause() {
     _backend.callMethod('pause');
   }
+
+  void remove() {
+    _backend.callMethod("remove");
+  }
 }
 
 class WegameAudioContext {
@@ -160,8 +164,8 @@ class WegamePlayer extends WebPlayer {
 
     // setup stereo panning
     final audioContext = WegameAudioContext();
-    final source = audioContext.createMediaElementSource(player!);
-    sourceNode = source;
+    //final source = audioContext.createMediaElementSource(player!);
+    //sourceNode = source;
 
     // Preload the source
     p.load();
@@ -273,6 +277,8 @@ class WegamePlayer extends WebPlayer {
     // Release `AudioElement` correctly (#966)
     // player?.src = '';
     // player?.remove();
+    player?.remove();
+
     player = null;
     // _stereoPanner = null;
 

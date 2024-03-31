@@ -80,6 +80,12 @@ class MPFlutter_Wechat_AudioElement {
         this.audioContext.pause();
     }
   }
+
+  remove() {
+    if (this.audioContext) {
+        this.audioContext.destroy();
+    }
+  }
 }
 
 class MPFlutter_Wechat_AudioContext {
