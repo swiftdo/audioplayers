@@ -5,6 +5,7 @@ class MPFlutter_Wechat_AudioElement {
     this.paused = false;
     this.playbackRate = 1.0;
     this.balance = undefined;
+    this.volume = undefined;
   }
 
   setLoop(value) {
@@ -25,6 +26,13 @@ class MPFlutter_Wechat_AudioElement {
     this.balance = value;
     if (this.stereoPanner) {
       this.stereoPanner.pan.value = value;
+    }
+  }
+
+  setVolume(value) {
+    this.volume = value;
+    if (this.gainNode) {
+        this.gainNode.value = value;
     }
   }
 
@@ -50,6 +58,13 @@ class MPFlutter_Wechat_AudioElement {
       this.stereoPanner.connect(this.audioContext.destination);
       if (this.balance !== undefined) {
         this.stereoPanner.pan.value = this.balance;
+      }
+      this.gainNode = this.audioContext.createGain();
+      this.source.connect(this.gainNode);
+      this.gainNode.connect(this.audioContext.destination);
+
+      if (this.volume !== undefined) {
+        this.gainNode.value = this.volume;
       }
       this.source.loop = this.loop;
       this.source.playbackRate.value = this.playbackRate;

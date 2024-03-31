@@ -29,6 +29,10 @@ class WegameAudioElement {
     _backend.callMethod('setBalance', [value]);
   }
 
+  set volume(double value) {
+    _backend.callMethod("setVolume", [value]);
+  }
+
   void load() {
     _backend.callMethod('load', []);
   }
@@ -127,7 +131,7 @@ class WegamePlayer extends WebPlayer {
   @override
   set volume(double volume) {
     _currentVolume = volume;
-    // player?.volume = volume; // todo
+    player?.volume = volume;
   }
 
   @override
