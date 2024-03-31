@@ -2,7 +2,6 @@ class MPFlutter_Wechat_AudioElement {
   constructor(src) {
     this.src = src;
     this.loop = false;
-    this.paused = false;
     this.playbackRate = 1.0;
     this.balance = undefined;
     this.volume = undefined;
@@ -10,70 +9,44 @@ class MPFlutter_Wechat_AudioElement {
 
   setLoop(value) {
     this.loop = value;
-    if (this.source) {
-      this.source.loop = value;
+    if (this.audioContext) {
+        this.audioContext.loop = value;
     }
   }
 
   setPlaybackRate(value) {
     this.playbackRate = value;
-    if (this.source) {
-      this.source.playbackRate.value = value;
+    if (this.audioContext) {
+        this.audioContext.playbackRate = value;
     }
   }
 
   setBalance(value) {
     this.balance = value;
-    if (this.stereoPanner) {
-      this.stereoPanner.pan.value = value;
-    }
+    // TODO: 待实现
   }
 
   setVolume(value) {
     this.volume = value;
-    if (this.gainNode) {
-        this.gainNode.gain.value = value;
+    if (this.audioContext) {
+        this.audioContext.volume = value;
     }
   }
 
   async load() {
-    const window = getApp()._flutter.window;
-    const response = await window.fetch(this.src);
-    const buffer = await response.arrayBuffer();
-    if (this.audioContext && this.source) {
-      const audioBuffer = await new Promise((resolve, reject) => {
-        this.audioContext.decodeAudioData(
-          buffer,
-          (result) => {
-            resolve(result);
-          },
-          (err) => {
-            reject(err);
-          }
-        );
-      });
-      this.source.buffer = audioBuffer;
-      this.stereoPanner = this.audioContext.createStereoPanner();
-      this.source.connect(this.stereoPanner);
-      
-      if (this.balance !== undefined) {
-        this.stereoPanner.pan.value = this.balance;
-      }
-      this.gainNode = this.audioContext.createGain();
-      this.stereoPanner.connect(this.gainNode);
-      this.gainNode.connect(this.audioContext.destination);
-      if (this.volume !== undefined) {
-        this.gainNode.gain.value = this.volume;
-      }
+    if (this.audioContext) {
+      this.audioContext.autoplay = true
+      this.audioContext.src = this.src;
 
-
-      this.source.loop = this.loop;
-      this.source.playbackRate.value = this.playbackRate;
-      this.source.onended = () => {
+      this.audioContext.onEnded = (e) => {
         this.onPlayEnded?.();
-      };
-    }
-    this.onLoadedData?.();
+      }
+
+      this.audioContext.loop = this.loop;
+      this.audioContext.playbackRate = this.playbackRate;
+      this.audioContext.volume = this.volume;
+      this.onLoadedData?.();
+     }
   }
 
   currentTime() {
@@ -84,42 +57,40 @@ class MPFlutter_Wechat_AudioElement {
   }
 
   setCurrentTime(value) {
-    this._currentTime = value;
+    if (this.audioContext) {
+        this.audioContext.currentTime = value;
+    }
   }
 
   duration() {
-    if (this.source && this.source.buffer) {
-      return this.source.buffer.duration;
+    if (this.audioContext) {
+        return this.audioContext.duration;
     }
     return 0;
   }
 
   async play() {
-    if (this.paused && this.audioContext) {
-      this.audioContext.resume()
+    if (this.audioContext) {
+        this.audioContext.play();
     }
-    else if (this.source && this.audioContext) {
-      this.source.connect(this.audioContext.destination);
-      this.source.start(0, this._currentTime ?? 0);
-    }
-    this.paused = false;
   }
 
   pause() {
     if (this.audioContext) {
-      this.audioContext.suspend()
+        this.audioContext.pause();
     }
-    this.paused = true;
   }
 }
 
 class MPFlutter_Wechat_AudioContext {
   constructor() {
-    this.audioContext = wx.createWebAudioContext();
+    this.audioContext = wx.createInnerAudioContext();
   }
 
   createMediaElementSource(audioElement) {
-    const source = this.audioContext.createBufferSource();
+    // TODO：为什么需要这个方法
+    var tx = wx.createWebAudioContext();
+    const source = tx.createBufferSource();
     audioElement.audioContext = this.audioContext;
     audioElement.source = source;
     return source;

@@ -90,15 +90,16 @@ class WrappedPlayer extends WebPlayer {
     p.loop = shouldLoop();
     p.volume = _currentVolume;
     p.playbackRate = _currentPlaybackRate;
-
     _setupStreams(p);
 
     // setup stereo panning
     final audioContext = JsAudioContext();
-    final source = audioContext.createMediaElementSource(player!);
-    _stereoPanner = audioContext.createStereoPanner();
-    source.connect(_stereoPanner!);
-    _stereoPanner?.connect(audioContext.destination);
+    print("audioContext init success");
+
+    // final source = audioContext.createMediaElementSource(player!);
+    // _stereoPanner = audioContext.createStereoPanner();
+    // source.connect(_stereoPanner!);
+    // _stereoPanner?.connect(audioContext.destination);
 
     // Preload the source
     p.load();
