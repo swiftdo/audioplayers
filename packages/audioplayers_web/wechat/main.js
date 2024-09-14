@@ -38,9 +38,9 @@ class MPFlutter_Wechat_AudioElement {
       this.audioContext.autoplay = true
       this.audioContext.src = this.src;
 
-      this.audioContext.onEnded = (e) => {
+      this.audioContext.onEnded((e) => {
         this.onPlayEnded?.();
-      }
+      })
 
       this.audioContext.loop = this.loop;
       this.audioContext.playbackRate = this.playbackRate;
